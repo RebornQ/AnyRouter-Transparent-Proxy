@@ -5,9 +5,11 @@ services:
     build: .
     container_name: anthropic-proxy
     environment:
-      # 可以在这里直接设置环境变量，或者使用 .env 文件
+      # 可以在这里直接设置环境变量,或者使用 .env 文件
       - API_BASE_URL=${API_BASE_URL:-https://anyrouter.top}
       - SYSTEM_PROMPT_REPLACEMENT=${SYSTEM_PROMPT_REPLACEMENT:-You are Claude Code, Anthropic's official CLI for Claude.}
+      # 服务端口配置
+      - PORT=${PORT:-8088}
       # 代理配置（可选）
       - HTTP_PROXY=${HTTP_PROXY:-}
       - HTTPS_PROXY=${HTTPS_PROXY:-}
@@ -18,7 +20,7 @@ services:
       - ./env/:/app/env/
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "python", "-c", "import httpx; r = httpx.get('http://localhost:8088/health', timeout=2); exit(0 if r.status_code == 200 else 1)" ]
+      test: [ "CMD", "python", "-c", "import httpx; import os; port = os.getenv('PORT', '8088'); r = httpx.get(f'http://localhost:{port}/health', timeout=2); exit(0 if r.status_code == 200 else 1)" ]
       interval: 30s
       timeout: 3s
       retries: 3

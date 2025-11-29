@@ -64,6 +64,10 @@ print(f"System prompt replacement: {SYSTEM_PROMPT_REPLACEMENT}")
 DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() in ("true", "1", "yes")
 print(f"Debug mode: {DEBUG_MODE}")
 
+# 服务端口配置
+PORT = int(os.getenv("PORT", "8088"))
+print(f"Server port: {PORT}")
+
 
 # 自定义 Header 配置
 # 从 env/.env.headers.json 文件加载，如果文件不存在或解析失败，则使用空字典 {}
@@ -303,4 +307,4 @@ async def proxy(path: str, request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8088, reload=True)
+    uvicorn.run("app:app", host="0.0.0.0", port=PORT, reload=True)
