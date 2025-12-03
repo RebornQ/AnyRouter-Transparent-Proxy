@@ -18,24 +18,47 @@ async def lifespan(_: FastAPI):
     global http_client
 
     # 读取代理配置
-    proxies = {}
     http_proxy = os.getenv("HTTP_PROXY")
     https_proxy = os.getenv("HTTPS_PROXY")
 
+    # 构建 mounts 配置（httpx 0.28.0+ 的新语法）
+    mounts = {}
+
     if http_proxy:
-        proxies["http://"] = http_proxy
+        # 确保代理 URL 包含协议
+        if "://" not in http_proxy:
+            http_proxy = f"http://{http_proxy}"
+        mounts["http://"] = httpx.AsyncHTTPTransport(proxy=http_proxy)
         print(f"HTTP Proxy configured: {http_proxy}")
+
     if https_proxy:
-        proxies["https://"] = https_proxy
+        # 注意：HTTPS 代理通常也使用 http:// 协议（这不是错误！）
+        if "://" not in https_proxy:
+            https_proxy = f"http://{https_proxy}"
+        mounts["https://"] = httpx.AsyncHTTPTransport(proxy=https_proxy)
         print(f"HTTPS Proxy configured: {https_proxy}")
 
-    # Startup: Initialize HTTP client
-    http_client = httpx.AsyncClient(
-        follow_redirects=False,
-        timeout=60.0,
-        proxies=proxies if proxies else None
-    )
+    try:
+        # 使用新的 mounts 参数初始化客户端
+        if mounts:
+            http_client = httpx.AsyncClient(
+                follow_redirects=False,
+                timeout=60.0,
+                mounts=mounts
+            )
+            print(f"HTTP client initialized with proxy mounts: {list(mounts.keys())}")
+        else:
+            http_client = httpx.AsyncClient(
+                follow_redirects=False,
+                timeout=60.0
+            )
+            print("HTTP client initialized without proxy")
+    except Exception as e:
+        print(f"Failed to initialize HTTP client: {e}")
+        raise
+
     yield
+
     # Shutdown: Close HTTP client
     await http_client.aclose()
 
