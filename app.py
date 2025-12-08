@@ -203,7 +203,10 @@ def filter_response_headers(headers: Iterable[tuple]) -> dict:
 
 def process_request_body(body: bytes) -> bytes:
     """
-    处理请求体，替换 system 数组中第一个元素的 text 内容
+    处理请求体,替换 system 数组中第一个元素的 text 内容
+
+    注意：此函数仅在 proxy() 中处理 /v1/messages 路由时被调用
+    其他路由（如 /v1/completions, /v1/models 等）跳过此处理
 
     Args:
         body: 原始请求体（bytes）
@@ -328,7 +331,10 @@ async def proxy(path: str, request: Request):
         print(f"[Proxy] Original body ({len(body)} bytes): {body[:200]}..." if len(body) > 200 else f"[Proxy] Original body: {body}")
 
     # 处理请求体（替换 system prompt）
-    body = process_request_body(body)
+    # 仅在路由为 /v1/messages 时执行处理
+    print(f"[Proxy] Processing request for path: {path}")
+    if path == "v1/messages" or path == "v1/messages/":
+        body = process_request_body(body)
 
     # 复制并过滤请求头
     incoming_headers = list(request.headers.items())
