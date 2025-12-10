@@ -6,17 +6,20 @@ FROM node:20-alpine AS frontend-builder
 # 设置工作目录
 WORKDIR /app/frontend
 
-# 复制 package 文件
-COPY frontend/package*.json ./
+# 安装 pnpm
+RUN npm install -g pnpm
 
-# 安装依赖
-RUN npm ci --only=production
+# 复制 package 文件
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+
+# 安装依赖（包括 devDependencies，因为构建需要）
+RUN pnpm install --frozen-lockfile
 
 # 复制前端源代码
 COPY frontend/ ./
 
 # 构建前端应用
-RUN npm run build
+RUN pnpm run build
 
 # ================================
 # 运行时阶段 - Python 后端 + 静态文件
@@ -37,10 +40,18 @@ ENV PYTHONUNBUFFERED=1 \
 ARG PORT=8088
 ENV PORT=${PORT}
 
+# 配置 apt 镜像源
+# 检查 /etc/apt/sources.list 是否存在，如果不存在则创建一个新的
+RUN test -e /etc/apt/sources.list || echo "deb http://mirrors.aliyun.com/debian bookworm main" > /etc/apt/sources.list && \
+    echo "deb-src http://mirrors.aliyun.com/debian bookworm main" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian-security bookworm-security main" >> /etc/apt/sources.list && \
+    echo "deb-src http://mirrors.aliyun.com/debian-security bookworm-security main" >> /etc/apt/sources.list && \
+    echo "deb http://mirrors.aliyun.com/debian bookworm-updates main" >> /etc/apt/sources.list && \
+    echo "deb-src http://mirrors.aliyun.com/debian bookworm-updates main" >> /etc/apt/sources.list
 # 安装系统依赖（优化镜像大小）
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates && \
+    ca-certificates && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get clean
 
@@ -48,21 +59,25 @@ RUN apt-get update && \
 RUN useradd --create-home --shell /bin/bash appuser
 
 # 复制 Python 依赖文件
-COPY requirements.txt .
+COPY backend/requirements.txt .
 
+# 使用 Pip 清华源
+RUN pip config set global.index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
 # 安装 Python 依赖
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# 复制应用代码
-COPY app.py .
-COPY .env.example .env
+# 复制后端应用代码
+COPY backend/app.py ./backend/
 
-# 复制前端构建产物
-COPY --from=frontend-builder /app/frontend/dist ./static/
+# 复制环境变量示例文件（可选）
+# COPY .env.example .env
+
+# 复制前端构建产物（vite 配置输出到 ../static，即 /app/static）
+COPY --from=frontend-builder /app/static ./static/
 
 # 复制环境配置目录
-COPY env/ ./env/
+# COPY env/ ./env/
 
 # 设置目录权限
 RUN chown -R appuser:appuser /app
@@ -76,4 +91,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
     CMD python -c "import httpx; import os; port = os.getenv('PORT', '8088'); r = httpx.get(f'http://localhost:{port}/health', timeout=2); exit(0 if r.status_code == 200 else 1)"
 
 # 启动应用（端口通过环境变量 PORT 配置）
-CMD ["python", "app.py"]
+CMD ["python", "backend/app.py"]

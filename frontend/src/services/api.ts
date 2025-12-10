@@ -1,6 +1,5 @@
 import ky, { type KyInstance } from 'ky'
 import type {
-  ApiResponse,
   SystemStats,
   ErrorLogsResponse,
   SystemConfig,

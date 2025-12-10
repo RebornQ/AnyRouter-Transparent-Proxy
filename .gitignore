@@ -197,3 +197,6 @@ node_modules/
 
 # Spec Workflow 审批临时数据
 .spec-workflow/approvals/
+
+# 前端构建产物（由 Docker 构建时生成）
+static/

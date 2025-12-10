@@ -103,13 +103,20 @@ sequenceDiagram
 graph LR
     Root[AnyRouter-Transparent-Proxy/]
 
-    Root --> App[app.py<br/>★ 核心代理逻辑]
-    Root --> Req[requirements.txt<br/>依赖清单]
+    Root --> Backend[backend/<br/>★ 后端服务]
+    Root --> Frontend[frontend/<br/>★ 前端项目]
+    Root --> Static[static/<br/>构建产物 .gitignore]
     Root --> Env[.env / .env.example<br/>环境变量配置]
     Root --> Docker[Docker 部署]
     Root --> Docs[文档]
     Root --> EnvDir[env/]
     Root --> SpecWF[.spec-workflow/]
+
+    Backend --> App[app.py<br/>核心代理逻辑]
+    Backend --> Req[requirements.txt<br/>Python 依赖]
+
+    Frontend --> FrontendSrc[src/<br/>Vue 源代码]
+    Frontend --> FrontendPkg[package.json<br/>前端依赖]
 
     Docker --> DF[Dockerfile]
     Docker --> DC[docker-compose.yml]
@@ -121,7 +128,9 @@ graph LR
 
     SpecWF --> Templates[templates/<br/>规范模板]
 
-    style App fill:#ffeb3b
+    style Backend fill:#ffeb3b
+    style Frontend fill:#81c784
+    style Static fill:#e0e0e0
     style Env fill:#80deea
     style Headers fill:#80deea
     style Docker fill:#c5e1a5
@@ -132,21 +141,24 @@ graph LR
 
 ## 🧩 核心组件
 
-### 1. 主应用模块 (`app.py`)
+### 1. 主应用模块 (`backend/app.py`)
 
-**职责**: 核心代理逻辑、请求/响应处理、生命周期管理
+**职责**: 核心代理逻辑、请求/响应处理、生命周期管理、Web 管理面板 API
 
 **关键函数**:
 
 | 函数名 | 行号 | 功能描述 |
 |--------|------|----------|
-| `lifespan()` | 16-80 | FastAPI 生命周期管理，初始化/关闭 HTTP 客户端 |
-| `load_custom_headers()` | 117-156 | 从 JSON 文件加载自定义请求头配置 |
-| `filter_request_headers()` | 174-187 | 过滤请求头，移除 hop-by-hop 头部和 Content-Length |
-| `filter_response_headers()` | 190-201 | 过滤响应头，移除 hop-by-hop 头部和 Content-Length |
-| `process_request_body()` | 204-293 | 处理请求体，替换/插入 System Prompt |
-| `health_check()` | 298-307 | 健康检查端点，用于容器监控 |
-| `proxy()` | 312-397 | 主代理函数，捕获所有路由并转发请求 |
+| `lifespan()` | 207-296 | FastAPI 生命周期管理，初始化/关闭 HTTP 客户端 |
+| `load_custom_headers()` | 375-413 | 从 JSON 文件加载自定义请求头配置 |
+| `filter_request_headers()` | 432-445 | 过滤请求头，移除 hop-by-hop 头部和 Content-Length |
+| `filter_response_headers()` | 448-459 | 过滤响应头，移除 hop-by-hop 头部和 Content-Length |
+| `process_request_body()` | 462-551 | 处理请求体，替换/插入 System Prompt |
+| `health_check()` | 556-565 | 健康检查端点，用于容器监控 |
+| `admin_static()` | 571-605 | 处理 Web 管理面板静态文件请求 |
+| `get_stats()` | 735-803 | 获取系统统计信息 API |
+| `stream_logs()` | 872-966 | 实时日志流 SSE 端点 |
+| `proxy()` | 998-1148 | 主代理函数，捕获所有路由并转发请求 |
 
 **设计亮点**:
 - ✅ 使用 `lifespan` 事件管理 HTTP 客户端生命周期
@@ -258,8 +270,9 @@ graph LR
 
 | 文件路径 | 行数 | 职责 | 最后修改 |
 |----------|------|------|----------|
-| `app.py` | 403 | 核心代理逻辑、请求/响应处理 | 最近 |
-| `requirements.txt` | 4 | Python 依赖清单 | 稳定 |
+| `backend/app.py` | 1156 | 核心代理逻辑、请求/响应处理、Web 管理面板 API | 最近 |
+| `backend/requirements.txt` | 4 | Python 依赖清单 | 稳定 |
+| `frontend/` | - | Vue 3 前端项目（Web 管理面板） | 最近 |
 | `.env.example` | 19 | 环境变量配置模板 | 稳定 |
 | `env/.env.headers.json` | 5 | 自定义请求头配置示例 | 稳定 |
 
@@ -284,7 +297,7 @@ graph LR
 
 ### System Prompt 处理逻辑
 
-**路由限制** (`app.py:336-337`):
+**路由限制** (`backend/app.py:1030-1031`):
 - 仅在路由为 `/v1/messages` 时执行 System Prompt 处理
 - 其他路由（如 `/v1/completions`, `/v1/models`）跳过处理
 
@@ -311,7 +324,7 @@ else:
 
 ### HTTP 头部过滤规则
 
-**移除的 hop-by-hop 头部** (`app.py:160-169`):
+**移除的 hop-by-hop 头部** (`backend/app.py:418-427`):
 - Connection
 - Keep-Alive
 - Proxy-Authenticate
@@ -328,7 +341,7 @@ else:
 
 ### 流式响应生命周期管理
 
-**关键代码** (`app.py:359-394`):
+**关键代码** (`backend/app.py:1057-1136`):
 
 ```python
 # 1. 构建请求（不使用 context manager）
@@ -375,14 +388,20 @@ return StreamingResponse(
 ### 本地开发
 
 ```bash
-# 1. 安装依赖
-pip install -r requirements.txt
+# 1. 安装后端依赖
+pip install -r backend/requirements.txt
 
 # 2. 复制环境变量模板
 cp .env.example .env
 
-# 3. 启动服务（开发模式）
-python app.py
+# 3. （可选）构建前端（如需使用 Web 管理面板）
+cd frontend
+npm install
+npm run build
+cd ..
+
+# 4. 启动服务（开发模式，从项目根目录运行）
+python backend/app.py
 ```
 
 ### Docker 部署

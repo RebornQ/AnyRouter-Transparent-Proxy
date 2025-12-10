@@ -3,7 +3,7 @@ version: '3.8'
 services:
   anthropic-proxy:
     build:
-      context: .
+      context: .  # 构建上下文为项目根目录（包含 backend/ 和 frontend/）
       dockerfile: Dockerfile
       # 可选：传递构建参数
       args:
