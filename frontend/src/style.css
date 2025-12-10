@@ -1,0 +1,67 @@
+@import 'tailwindcss';
+
+/* 自定义基础样式 */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100;
+    @apply antialiased;
+  }
+}
+
+/* 自定义组件样式 */
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700;
+    @apply focus:ring-blue-500 dark:focus:ring-blue-400;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-900 hover:bg-gray-300;
+    @apply dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600;
+    @apply focus:ring-gray-500 dark:focus:ring-gray-400;
+  }
+
+  .card {
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg;
+    @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+}
+
+/* 自定义工具类 */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(156 163 175) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(156 163 175);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(107 114 128);
+  }
+}

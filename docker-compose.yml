@@ -2,14 +2,25 @@ version: '3.8'
 
 services:
   anthropic-proxy:
-    build: .
+    build:
+      context: .  # 构建上下文为项目根目录（包含 backend/ 和 frontend/）
+      dockerfile: Dockerfile
+      # 可选：传递构建参数
+      args:
+        PORT: ${PORT:-8088}
     container_name: anthropic-proxy
     environment:
-      # 可以在这里直接设置环境变量,或者使用 .env 文件
+      # 后端配置
       - API_BASE_URL=${API_BASE_URL:-https://anyrouter.top}
       - SYSTEM_PROMPT_REPLACEMENT=${SYSTEM_PROMPT_REPLACEMENT:-You are Claude Code, Anthropic's official CLI for Claude.}
+      - SYSTEM_PROMPT_BLOCK_INSERT_IF_NOT_EXIST=${SYSTEM_PROMPT_BLOCK_INSERT_IF_NOT_EXIST:-false}
       # 服务端口配置
       - PORT=${PORT:-8088}
+      # 管理面板配置
+      - ENABLE_DASHBOARD=${ENABLE_DASHBOARD:-true}
+      - DASHBOARD_API_KEY=${DASHBOARD_API_KEY:-your-secret-api-key-change-me}
+      # 调试模式
+      - DEBUG_MODE=${DEBUG_MODE:-false}
       # 代理配置（可选）
       - HTTP_PROXY=${HTTP_PROXY:-}
       - HTTPS_PROXY=${HTTPS_PROXY:-}
@@ -26,3 +37,6 @@ services:
       retries: 3
       start_period: 10s
     network_mode: "host" # 使用主机网络模式，适用于 Linux 主机
+    # 可选：暴露端口（如果不使用 host 网络模式）
+    # ports:
+    #   - "${PORT:-8088}:${PORT:-8088}"

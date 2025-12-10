@@ -1,0 +1,91 @@
+# .claudeignore - Claude Code 上下文排除规则
+# 本文件定义了在 AI 上下文分析时应该忽略的文件和目录
+
+# ==================== Python 相关 ====================
+# Python 编译缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 虚拟环境目录
+venv/
+ENV/
+env/
+.venv
+
+# 测试和覆盖率
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# ==================== 环境变量和敏感信息 ====================
+# 环境变量文件（保留 .env.example 作为模板参考）
+.env
+.env.local
+.env.*.local
+
+# 自定义请求头配置（可能包含敏感信息）
+env/.env.headers.json
+
+# ==================== Docker 相关 ====================
+# Docker 数据目录
+docker-data/
+volumes/
+
+# ==================== IDE 和编辑器 ====================
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iml
+
+# Vim
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ==================== 日志和临时文件 ====================
+# 日志文件
+*.log
+logs/
+*.log.*
+
+# 临时文件
+*.tmp
+*.temp
+.cache/
+
+# ==================== 构建和分发 ====================
+# 构建产物
+dist/
+build/
+*.egg-info/
+
+# ==================== 规范工作流（可选） ====================
+# 如果不希望 AI 分析规范文档，可以取消下面的注释
+# .spec-workflow/
+
+# ==================== Git 相关 ====================
+.git/
+.gitignore
+
+# ==================== 其他 ====================
+# Node.js (如果未来添加前端)
+node_modules/
+package-lock.json
+yarn.lock
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar

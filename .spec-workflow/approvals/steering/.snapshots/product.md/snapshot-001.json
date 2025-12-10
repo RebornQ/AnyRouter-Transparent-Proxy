@@ -1,0 +1,16 @@
+{
+  "id": "snapshot_1765293404711_sa7fmc0mr",
+  "approvalId": "approval_1765293404707_duz45tifp",
+  "approvalTitle": "Product 文档审批",
+  "version": 1,
+  "timestamp": "2025-12-09T15:16:44.711Z",
+  "trigger": "initial",
+  "status": "pending",
+  "content": "# Product Overview\n\n## Product Purpose\nAnyRouter Transparent Proxy 是一个专为解决 AnyRouter 的 Anthropic API 在 Claude Code for VS Code 插件中报错 500 问题而设计的轻量级透明 HTTP 代理服务。该产品提供完全透明的 API 代理能力，使开发者能够无缝集成 Claude AI 服务，同时解决网络兼容性和访问限制问题。\n\n## Target Users\n### 主要用户群体\n- **Claude Code 用户**: 使用 VS Code Claude Code 插件的开发者，遇到 AnyRouter API 500 错误问题\n- **企业开发者**: 需要在受限网络环境中使用 Anthropic API 的开发团队\n- **独立开发者**: 寻求稳定、高性能 AI API 代理解决方案的个人开发者\n- **DevOps 工程师**: 负责部署和维护 API 代理基础设施的技术人员\n\n### 用户痛点\n- Claude Code 插件与 AnyRouter API 兼容性问题\n- 网络访问限制和防火墙阻碍\n- 需要透明的 API 代理而不影响现有代码逻辑\n- 缺乏可靠的流式响应支持\n- 生产环境对稳定性和性能的高要求\n\n## Key Features\n### 1. **完全透明代理**\n支持所有 HTTP 方法（GET、POST、PUT、DELETE 等），无缝代理请求，无需修改客户端代码\n\n### 2. **智能 System Prompt 处理**\n- 支持 System Prompt 动态替换模式\n- 支持智能插入模式（检测关键字后决定插入或替换）\n- 仅对 `/v1/messages` 路由执行处理，避免影响其他 API\n\n### 3. **高性能流式响应**\n- 基于异步架构的流式传输\n- 完整支持 SSE (Server-Sent Events)\n- 零拷贝转发，最大化性能\n\n### 4. **企业级可靠性**\n- 严格遵循 RFC 7230 HTTP/1.1 规范\n- 自动过滤 hop-by-hop 头部\n- 连接池复用，支持高并发\n- 优雅的错误处理和资源管理\n\n### 5. **灵活的配置管理**\n- 环境变量配置\n- 自定义请求头注入\n- Docker 容器化部署支持\n\n## Business Objectives\n- **解决兼容性问题**: 消除 Claude Code 与 AnyRouter API 之间的 500 错误\n- **提供企业级稳定性**: 确保生产环境的可靠运行\n- **简化部署流程**: 通过 Docker 化简化安装和维护\n- **支持开发者生态**: 为使用 Anthropic API 的开发者提供基础设施支持\n- **建立技术标准**: 在 API 代理领域建立最佳实践标准\n\n## Success Metrics\n### 技术指标\n- **可用性**: 99.9% 服务正常运行时间\n- **响应延迟**: 代理延迟 < 50ms (P99)\n- **并发处理**: 支持 1000+ 并发连接\n- **错误率**: 代理服务错误率 < 0.1%\n\n### 用户满意度\n- **集成成功率**: 用户一次性集成成功率 > 95%\n- **问题解决率**: Claude Code 500 错误解决率 = 100%\n- **文档完整性**: 完整的部署和使用文档覆盖\n\n## Product Principles\n### 1. **透明优先 (Transparency First)**\n代理服务对客户端完全透明，不改变原有的 API 调用方式和响应格式\n\n### 2. **性能至上 (Performance First)**\n采用异步架构和连接池复用，确保最低延迟和最高吞吐量\n\n### 3. **标准兼容 (Standards Compliant)**\n严格遵循 HTTP RFC 规范，确保与各种 HTTP 客户端的兼容性\n\n### 4. **开发者友好 (Developer Friendly)**\n提供清晰的文档、简单的配置和详细的错误信息\n\n### 5. **生产就绪 (Production Ready)**\n内置健康检查、优雅关闭和资源管理等生产环境必需功能\n\n## Monitoring & Visibility\n### 健康监控\n- **健康检查端点**: `/health` 端点用于容器监控和负载均衡\n- **实时状态**: 服务运行状态和基本指标\n- **Docker 集成**: 支持 Docker 健康检查机制\n\n### 日志系统\n- **结构化日志**: 带前缀的分类日志（Proxy、System Replacement、Custom Headers 等）\n- **调试模式**: 可选的详细请求/响应日志\n- **错误追踪**: 详细的错误信息和堆栈跟踪\n\n### 部署监控\n- **容器状态**: Docker Compose 状态监控\n- **资源使用**: CPU、内存、网络使用情况\n- **自动重启**: 容器异常退出时自动重启\n\n## Future Vision\n### 短期增强 (3-6 个月)\n- **多上游支持**: 支持负载均衡和故障转移\n- **请求限流**: 基于 IP 或 API Key 的速率限制\n- **指标收集**: Prometheus metrics 端点支持\n- **日志持久化**: 可选的请求/响应日志存储\n\n### 中期规划 (6-12 个月)\n- **WebSocket 代理**: 支持实时 WebSocket 连接代理\n- **缓存机制**: Redis 集成的智能缓存系统\n- **API Key 管理**: 内置的 API Key 验证和配额管理\n- **Web 管理面板**: 图形化配置和监控界面\n\n### 长期愿景 (1+ 年)\n- **多云支持**: 支持多个云服务提供商的 API\n- **智能路由**: 基于性能和成本的智能请求路由\n- **边缘计算**: CDN 和边缘节点支持\n- **企业功能**: SSO、审计日志、合规性支持\n\n### 技术演进方向\n- **HTTP/3 支持**: 迁移到最新 HTTP 协议版本\n- **机器学习优化**: 智能缓存和路由决策\n- **微服务架构**: 拆分为更小的专业服务\n- **云原生增强**: Kubernetes Operator 和服务网格支持",
+  "fileStats": {
+    "size": 4995,
+    "lines": 119,
+    "lastModified": "2025-12-09T15:16:26.222Z"
+  },
+  "comments": []
+}

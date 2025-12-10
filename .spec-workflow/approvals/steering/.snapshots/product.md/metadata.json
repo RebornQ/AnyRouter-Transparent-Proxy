@@ -1,0 +1,14 @@
+{
+  "filePath": ".spec-workflow/steering/product.md",
+  "currentVersion": 1,
+  "snapshots": [
+    {
+      "version": 1,
+      "filename": "snapshot-001.json",
+      "timestamp": "2025-12-09T15:16:44.711Z",
+      "trigger": "initial",
+      "approvalId": "approval_1765293404707_duz45tifp",
+      "approvalTitle": "Product 文档审批"
+    }
+  ]
+}

@@ -10,6 +10,7 @@
 ## 目录
 
 - [核心特性](#核心特性)
+- [项目结构](#项目结构)
 - [快速开始](#快速开始)
   - [Docker 部署（推荐）](#docker-部署推荐)
   - [本地运行](#本地运行)
@@ -27,6 +28,34 @@
 - **灵活配置** - 支持环境变量配置目标 URL 和 System Prompt 替换
 - **高性能** - 连接池复用，异步处理，高效应对并发请求
 - **智能处理** - 自动计算 Content-Length，避免请求体修改导致的协议错误
+- **Web 管理面板** - 提供实时监控、统计分析和配置管理功能
+
+## 项目结构
+
+```
+AnyRouter-Transparent-Proxy/
+├── backend/              # 后端服务（FastAPI）
+│   ├── app.py           # 核心代理逻辑
+│   └── requirements.txt # Python 依赖
+├── frontend/            # 前端项目（Vue 3 + TypeScript）
+│   ├── src/            # 源代码
+│   ├── package.json    # 前端依赖
+│   └── vite.config.ts  # Vite 配置
+├── env/                 # 配置文件目录
+│   └── .env.headers.json # 自定义请求头配置
+├── docs/                # 文档
+├── static/              # 前端构建产物（.gitignore）
+├── Dockerfile           # Docker 镜像构建
+├── docker-compose.yml   # Docker Compose 配置
+├── .env.example         # 环境变量模板
+└── CLAUDE.md           # AI 上下文索引
+```
+
+**说明**：
+- `backend/` - 后端 Python 服务，负责代理逻辑和 API 处理
+- `frontend/` - 前端 Vue 项目，提供 Web 管理面板
+- `static/` - 前端构建产物，由 Docker 构建时自动生成，不提交到 Git
+- `env/` - 运行时配置文件目录
 
 ## 快速开始
 
@@ -81,7 +110,7 @@ docker run -d --name anthropic-proxy -p 8088:8088 \
 
 ```bash
 # 安装依赖
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 
 # 或手动安装
 pip install fastapi uvicorn httpx python-dotenv
@@ -89,11 +118,22 @@ pip install fastapi uvicorn httpx python-dotenv
 # 复制环境变量模板
 cp .env.example .env
 
-# 启动服务
-python app.py
+# 启动服务（从项目根目录运行）
+python backend/app.py
 ```
 
 服务将在 `http://0.0.0.0:8088` 启动。
+
+**注意**：本地开发时，如果需要使用 Web 管理面板，需要先构建前端：
+
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+```
+
+构建产物会输出到 `static/` 目录（该目录已在 `.gitignore` 中忽略）。
 
 ## 配置说明
 
