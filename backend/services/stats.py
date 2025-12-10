@@ -205,6 +205,23 @@ async def query_persisted_logs(
         return [], 0
 
 
+async def clear_all_logs():
+    """清空持久化与内存队列"""
+    if log_storage:
+        try:
+            await log_storage.clear_all()
+        except Exception as e:
+            print(f"[Log Storage] Failed to clear files: {e}")
+
+    # 清空内存日志队列
+    try:
+        while not log_queue.empty():
+            log_queue.get_nowait()
+            log_queue.task_done()
+    except Exception:
+        pass
+
+
 async def broadcast_log_message(level: str, message: str, path: str = "", request_id: str = "", response_content: str = None):
     """广播日志消息到所有订阅者"""
     current_time = time.time()

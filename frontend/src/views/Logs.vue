@@ -72,7 +72,7 @@
                 : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             ]"
           >
-            {{ autoScroll ? '自动滚动' : '暂停滚动' }}
+            {{ autoScroll ? '自动滚动' : '回到顶部并开启' }}
           </button>
           <button
             @click="clearLogs"
@@ -527,10 +527,9 @@ const handleScroll = () => {
     scrollTop.value = logContainer.value.scrollTop
     containerHeight.value = logContainer.value.clientHeight
 
-    // 自动滚动检测
-    const { scrollTop: currentScrollTop, scrollHeight, clientHeight } = logContainer.value
-    const isAtBottom = scrollHeight - currentScrollTop <= clientHeight + 100
-    autoScroll.value = isAtBottom
+    // 自动滚动检测：位于顶部则开启
+    const { scrollTop: currentScrollTop } = logContainer.value
+    autoScroll.value = currentScrollTop <= 10
   }
 }
 
@@ -584,7 +583,22 @@ const loadHistoryLogs = async (isInitial = false) => {
 }
 
 const clearLogs = () => {
-  logs.value = []
+  if (!window.confirm('确定要清空所有日志吗？这会删除后端持久化和内存中的日志。')) {
+    return
+  }
+
+  logsApi.clearLogs()
+    .then(() => {
+      logs.value = []
+      logHeights.value = {}
+      logRefs.value = {}
+      historyOffset.value = 0
+      hasMoreHistory.value = true
+    })
+    .catch((error) => {
+      console.error('[Logs] 清空后端日志失败:', error)
+      window.alert('清空日志失败，请重试或查看控制台错误')
+    })
 }
 
 const reconnect = () => {
@@ -665,7 +679,16 @@ const disconnectSSE = () => {
 }
 
 const toggleAutoScroll = () => {
-  autoScroll.value = !autoScroll.value
+  if (!logContainer.value) {
+    autoScroll.value = true
+    return
+  }
+
+  const atTop = logContainer.value.scrollTop <= 10
+  if (!atTop) {
+    logContainer.value.scrollTop = 0
+  }
+  autoScroll.value = true
 }
 
 // 注意: 不需要在过滤条件变化时重新连接 SSE

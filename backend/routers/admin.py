@@ -40,7 +40,8 @@ from ..services.stats import (
     broadcast_log_message,
     query_persisted_logs,
     get_recent_persisted_logs,
-    log_storage
+    log_storage,
+    clear_all_logs
 )
 
 # 创建路由器
@@ -363,6 +364,16 @@ async def get_history_logs(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"获取历史日志失败: {str(e)}")
+
+
+@router.post("/api/admin/logs/clear")
+async def clear_logs(authenticated: bool = Depends(verify_dashboard_api_key)):
+    """清空后端日志（持久化与内存队列）"""
+    try:
+        await clear_all_logs()
+        return {"success": True, "message": "日志已清空"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"清空日志失败: {str(e)}")
 
 
 @router.get("/api/admin/logs/stream")

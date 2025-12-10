@@ -203,6 +203,10 @@ export const logsApi = {
       searchParams
     }).json<LogHistoryResponse>()
     return response
+  },
+
+  async clearLogs(): Promise<{ success: boolean; message?: string }> {
+    return api.post('admin/logs/clear').json<{ success: boolean; message?: string }>()
   }
 }
 

@@ -182,3 +182,20 @@ class LogStorage:
         """手动触发清理"""
         self.retention_days = days
         await self._maybe_cleanup()
+
+    async def clear_all(self) -> None:
+        """清空所有持久化日志"""
+        def remove_files():
+            for name in os.listdir(self.storage_path):
+                if not name.endswith(".jsonl"):
+                    continue
+                path = os.path.join(self.storage_path, name)
+                try:
+                    os.remove(path)
+                except FileNotFoundError:
+                    continue
+
+        async with self._lock:
+            await asyncio.to_thread(remove_files)
+            self._daily_counts = {}
+            self._last_cleanup = None
