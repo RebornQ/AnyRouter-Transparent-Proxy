@@ -7,7 +7,7 @@
           配置管理
         </h1>
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          管理 AnyRouter 代理服务的运行配置
+          管理代理服务的运行配置
         </p>
       </div>
       <div class="flex items-center space-x-3 opacity-60">
@@ -565,7 +565,7 @@ const handleExport = () => {
   const url = URL.createObjectURL(dataBlob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `anyrouter-config-${new Date().toISOString().split('T')[0]}.json`
+  link.download = `proxy-config-${new Date().toISOString().split('T')[0]}.json`
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)

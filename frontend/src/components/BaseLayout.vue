@@ -29,7 +29,7 @@
               </svg>
             </div>
             <span class="ml-3 text-xl font-semibold text-gray-900 dark:text-white">
-              AnyRouter
+              透明代理服务
             </span>
           </div>
           <button
@@ -56,11 +56,13 @@
             <div class="text-[11px] font-semibold uppercase tracking-wide text-orange-700 dark:text-orange-200">
               代理服务地址
             </div>
-            <div class="mt-1 flex items-center space-x-2">
-              <span class="truncate">{{ proxyBaseUrl }}</span>
+            <div class="mt-1 relative min-w-0">
+              <span class="flex-1 break-all whitespace-normal block">{{ proxyBaseUrl }}</span>
               <span
-                v-if="copied"
-                class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-200 text-orange-800 dark:bg-orange-800 dark:text-orange-50"
+                v-show="copied"
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-200 text-orange-800 dark:bg-orange-800 dark:text-orange-50 shrink-0 absolute"
+                style="right: 0.1px; bottom: 0.1px;"
+                aria-live="polite"
               >
                 已复制
               </span>
@@ -297,7 +299,7 @@ menuItems.forEach(item => {
 // 当前页面标题
 const currentTitle = computed(() => {
   const item = menuItems.find(item => item.path === currentPath.value)
-  return item?.name || 'AnyRouter 管理面板'
+  return item?.name || '透明代理服务管理面板'
 })
 
 // 侧边栏控制
