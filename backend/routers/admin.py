@@ -44,6 +44,20 @@ from ..services.stats import (
     clear_all_logs
 )
 
+def _normalize_status_code(entry: dict) -> dict:
+    """确保 status_code 为数字，避免前端出现 "--" 与错误颜色不一致"""
+    status_code = entry.get("status_code")
+    # 保留原始值，便于调试定位
+    entry["status_code_raw"] = status_code
+
+    if isinstance(status_code, str):
+        try:
+            entry["status_code"] = int(status_code)
+        except ValueError:
+            # 转换失败时保留 None，让上层按未知处理，但 raw 里还能看到来源
+            entry["status_code"] = None
+    return entry
+
 # 创建路由器
 router = APIRouter()
 
@@ -201,18 +215,19 @@ async def get_stats(
     """获取系统统计信息"""
     try:
         filtered_requests, filtered_errors, filtered_time_series = await get_time_filtered_data(start_time, end_time)
+        normalized_requests = [_normalize_status_code(dict(req)) for req in filtered_requests]
 
         # 计算基本统计
-        total_filtered_requests = len(filtered_requests)
+        total_filtered_requests = len(normalized_requests)
         successful_filtered_requests = len([
-            r for r in filtered_requests
+            r for r in normalized_requests
             if (
                 (r.get("status_code") is not None and r.get("status_code", 0) < 400) or
                 (r.get("status_code") is None and r.get("status") != "error")
             )
         ])
         error_filtered_requests = len([
-            r for r in filtered_requests
+            r for r in normalized_requests
             if (
                 (r.get("status_code") is not None and r.get("status_code", 0) >= 400) or
                 r.get("status") == "error"
@@ -220,7 +235,7 @@ async def get_stats(
         ])
 
         # 计算响应时间统计
-        response_times = [r["response_time"] * 1000 for r in filtered_requests if r["response_time"] > 0]  # 转换为毫秒
+        response_times = [r["response_time"] * 1000 for r in normalized_requests if r["response_time"] > 0]  # 转换为毫秒
         response_time_stats = calculate_percentiles(response_times, [50, 95, 99])
 
         # 计算QPS（每秒请求数）
@@ -228,7 +243,7 @@ async def get_stats(
         qps = total_filtered_requests / time_range if time_range > 0 else 0
 
         # 计算总字节数
-        total_bytes_sent = sum(r.get("bytes", 0) for r in filtered_requests)
+        total_bytes_sent = sum(r.get("bytes", 0) for r in normalized_requests)
 
         # 获取路径统计
         path_stats_filtered = {}
@@ -267,7 +282,7 @@ async def get_stats(
             },
             "time_series": filtered_time_series,
             "top_paths": dict(top_paths),
-            "recent_requests": filtered_requests[-limit:] if limit > 0 else filtered_requests
+            "recent_requests": normalized_requests[-limit:] if limit > 0 else normalized_requests
         }
 
     except Exception as e:

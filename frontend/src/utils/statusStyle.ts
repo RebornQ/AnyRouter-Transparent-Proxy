@@ -26,7 +26,7 @@ const containerClassByTone: Record<StatusTone, string> = {
   info: 'bg-gray-50 dark:bg-gray-700'
 }
 
-const getStatusTone = (statusCode?: number): StatusTone => {
+const getStatusTone = (statusCode?: unknown): StatusTone => {
   if (typeof statusCode !== 'number') return 'info'
   if (statusCode >= 200 && statusCode < 300) return 'success'
   if (statusCode >= 300 && statusCode < 400) return 'redirect'
@@ -35,22 +35,28 @@ const getStatusTone = (statusCode?: number): StatusTone => {
   return 'info'
 }
 
-export const isErrorStatus = (statusCode?: number): boolean => {
+export const isErrorStatus = (statusCode?: unknown): boolean => {
   return typeof statusCode === 'number' && statusCode >= 400
 }
 
-export const getStatusBadgeClass = (statusCode?: number): string => {
+export const getStatusBadgeClass = (statusCode?: unknown): string => {
   return badgeClassByTone[getStatusTone(statusCode)]
 }
 
-export const getStatusDotClass = (statusCode?: number): string => {
+export const getStatusDotClass = (statusCode?: unknown): string => {
   return dotClassByTone[getStatusTone(statusCode)]
 }
 
-export const getStatusContainerClass = (statusCode?: number): string => {
+export const getStatusContainerClass = (statusCode?: unknown): string => {
   return containerClassByTone[getStatusTone(statusCode)]
 }
 
-export const formatStatusLabel = (statusCode?: number): string => {
-  return typeof statusCode === 'number' ? `${statusCode}` : '--'
+/*
+ * 为什么有时候状态码会出现 --，但 getStatusContainerClass、getStatusDotClass、getStatusBadgeClass 都判断成取 error 的颜色了
+ * 目前是通过前后端都对请求列表做归一化处理了
+ */
+export const formatStatusLabel = (statusCode?: unknown): string => {
+  if (typeof statusCode === 'number') return `${statusCode}`
+  if (statusCode !== undefined && statusCode !== null) return String(statusCode)
+  return '--'
 }
