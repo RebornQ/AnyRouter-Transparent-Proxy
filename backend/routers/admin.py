@@ -204,8 +204,20 @@ async def get_stats(
 
         # 计算基本统计
         total_filtered_requests = len(filtered_requests)
-        successful_filtered_requests = len([r for r in filtered_requests if r["status"] == "success"])
-        error_filtered_requests = len([r for r in filtered_requests if r["status"] == "error"])
+        successful_filtered_requests = len([
+            r for r in filtered_requests
+            if (
+                (r.get("status_code") is not None and r.get("status_code", 0) < 400) or
+                (r.get("status_code") is None and r.get("status") != "error")
+            )
+        ])
+        error_filtered_requests = len([
+            r for r in filtered_requests
+            if (
+                (r.get("status_code") is not None and r.get("status_code", 0) >= 400) or
+                r.get("status") == "error"
+            )
+        ])
 
         # 计算响应时间统计
         response_times = [r["response_time"] * 1000 for r in filtered_requests if r["response_time"] > 0]  # 转换为毫秒

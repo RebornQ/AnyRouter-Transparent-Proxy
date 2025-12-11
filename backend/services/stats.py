@@ -76,7 +76,14 @@ async def record_request_start(path: str, method: str, bytes_sent: int) -> str:
     return request_id
 
 
-async def record_request_success(request_id: str, path: str, method: str, bytes_received: int, response_time: float):
+async def record_request_success(
+    request_id: str,
+    path: str,
+    method: str,
+    bytes_received: int,
+    response_time: float,
+    status_code: int
+):
     """记录成功请求"""
     async with stats_lock:
         request_stats["successful_requests"] += 1
@@ -92,14 +99,22 @@ async def record_request_success(request_id: str, path: str, method: str, bytes_
             "request_id": request_id,
             "path": path,
             "method": method,
-            "status": "success",
+            "status_code": status_code,
             "bytes": bytes_received,
             "response_time": response_time,
             "timestamp": time.time()
         })
 
 
-async def record_request_error(request_id: str, path: str, method: str, error_msg: str, response_time: float = 0, response_content: str = None):
+async def record_request_error(
+    request_id: str,
+    path: str,
+    method: str,
+    error_msg: str,
+    response_time: float = 0,
+    response_content: str = None,
+    status_code: int | None = None
+):
     """记录请求错误"""
     async with stats_lock:
         request_stats["failed_requests"] += 1
@@ -110,6 +125,7 @@ async def record_request_error(request_id: str, path: str, method: str, error_ms
             "request_id": request_id,
             "path": path,
             "error": error_msg,
+            "status_code": status_code,
             "response_content": response_content,
             "timestamp": time.time(),
             "response_time": response_time
@@ -120,7 +136,7 @@ async def record_request_error(request_id: str, path: str, method: str, error_ms
             "request_id": request_id,
             "path": path,
             "method": method,
-            "status": "error",
+            "status_code": status_code,
             "error": error_msg,
             "response_content": response_content,
             "response_time": response_time,
@@ -139,7 +155,10 @@ async def update_time_window_stats():
         minute_requests = sum(1 for req in recent_requests
                             if req["timestamp"] > current_time - 60)
         minute_errors = sum(1 for req in recent_requests
-                          if req["status"] == "error" and req["timestamp"] > current_time - 60)
+                          if (
+                              (req.get("status_code") is not None and req.get("status_code", 0) >= 400) or
+                              req.get("status") == "error"
+                          ) and req["timestamp"] > current_time - 60)
         minute_bytes = sum(req.get("bytes", 0) for req in recent_requests
                          if req["timestamp"] > current_time - 60)
 

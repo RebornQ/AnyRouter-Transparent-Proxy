@@ -283,7 +283,14 @@ async def proxy(path: str, request: Request):
             await resp.aclose()
             if request_id:
                 if resp.status_code < 400:
-                    await record_request_success(request_id, path, request.method, bytes_received, response_time)
+                    await record_request_success(
+                        request_id,
+                        path,
+                        request.method,
+                        bytes_received,
+                        response_time,
+                        resp.status_code
+                    )
                     await broadcast_log_message(
                         "INFO",
                         f"Request completed: {request.method} {path} - {resp.status_code} ({bytes_received} bytes, {response_time*1000:.1f}ms)",
@@ -301,10 +308,13 @@ async def proxy(path: str, request: Request):
 
                     # 记录错误到统计服务
                     await record_request_error(
-                        request_id, path, request.method,
+                        request_id,
+                        path,
+                        request.method,
                         f"HTTP {resp.status_code}: {resp.reason_phrase}",
                         response_time,
-                        response_content  # 新增参数
+                        response_content,  # 新增参数
+                        resp.status_code
                     )
                     # 广播错误日志到 SSE
                     await broadcast_log_message(
@@ -326,7 +336,15 @@ async def proxy(path: str, request: Request):
     except httpx.RequestError as e:
         # 记录请求错误
         if request_id:
-            await record_request_error(request_id, path, request.method, str(e), time.time() - start_time)
+            await record_request_error(
+                request_id,
+                path,
+                request.method,
+                str(e),
+                time.time() - start_time,
+                None,
+                502
+            )
             await broadcast_log_message(
                 "ERROR",
                 f"Upstream request failed: {request.method} {path} - {str(e)}",

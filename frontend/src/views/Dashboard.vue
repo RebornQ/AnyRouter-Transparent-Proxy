@@ -182,19 +182,14 @@
           <div
             v-for="request in recentRequests"
             :key="request.request_id"
-            :class="[
-              'p-3 rounded-lg',
-              request.status === 'success'
-                ? 'bg-gray-50 dark:bg-gray-700'
-                : 'bg-red-50 dark:bg-red-900/20'
-            ]"
+            :class="['p-3 rounded-lg', getStatusContainerClass(request.status_code, request.status)]"
           >
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-3">
                 <div
                   :class="[
                     'w-2 h-2 rounded-full',
-                    request.status === 'success' ? 'bg-green-500' : 'bg-red-500'
+                    getStatusDotClass(request.status_code, request.status)
                   ]"
                 />
                 <div class="flex items-center space-x-2">
@@ -223,17 +218,15 @@
                 <span
                   :class="[
                     'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                    request.status === 'success'
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                    getStatusBadgeClass(request.status_code, request.status)
                   ]"
                 >
-                  {{ request.status }}
+                  {{ formatStatusLabel(request.status_code, request.status) }}
                 </span>
               </div>
             </div>
             <!-- 错误信息 -->
-            <div v-if="request.status !== 'success' && request.error" class="mt-2 pl-5">
+            <div v-if="isErrorStatus(request.status_code, request.status) && request.error" class="mt-2 pl-5">
               <p class="text-xs text-red-600 dark:text-red-400 font-mono">
                 {{ request.error }}
               </p>
@@ -266,7 +259,13 @@ import {
   Filler
 } from 'chart.js'
 import { useRealtimeStats } from '@/composables/useRealtime'
-import type { SystemStats } from '@/types'
+import {
+  formatStatusLabel,
+  getStatusBadgeClass,
+  getStatusContainerClass,
+  getStatusDotClass,
+  isErrorStatus
+} from '@/utils/statusStyle'
 
 // 注册 Chart.js 组件
 Chart.register(

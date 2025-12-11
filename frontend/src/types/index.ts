@@ -41,7 +41,8 @@ export interface SystemStats {
     request_id: string
     path: string
     method: string
-    status: string
+    status_code: number
+    status?: string
     bytes?: number
     response_time: number
     timestamp: number

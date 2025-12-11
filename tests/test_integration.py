@@ -36,7 +36,7 @@ async def test_stats_data_structure():
             "request_id": "test-123",
             "path": "/test",
             "method": "POST",
-            "status": "error",
+            "status_code": 400,
             "error": "HTTP 400",
             "response_content": "Error: 当前模型不可用",
             "response_time": 0.1,
@@ -64,7 +64,7 @@ async def test_api_response_structure():
                     "request_id": "req-1",
                     "path": "/v1/messages",
                     "method": "POST",
-                    "status": "error",
+                    "status_code": 400,
                     "error": "HTTP 400: Bad Request",
                     "response_content": '{"error": {"message": "当前模型无法访问"}}',
                     "response_time": 0.123,
@@ -76,6 +76,7 @@ async def test_api_response_structure():
 
         # 检查字段存在
         assert "response_content" in mock_stats["recent_requests"][0]
+        assert "status_code" in mock_stats["recent_requests"][0]
         print(f"✓ API 响应结构包含 response_content")
         print(f"  示例: {mock_stats['recent_requests'][0]['response_content']}")
         return True

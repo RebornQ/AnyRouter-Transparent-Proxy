@@ -140,91 +140,16 @@
               <div
                 v-for="request in sortedRecentRequests"
                 :key="request.request_id"
-                :class="[
-                  'p-3 rounded-lg',
-                  request.status === 'success'
-                    ? 'bg-gray-50 dark:bg-gray-700'
-                    : 'bg-red-50 dark:bg-red-900/20'
-                ]"
-              >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3 min-w-0">
-                  <div
-                    :class="[
-                      'w-2 h-2 rounded-full',
-                      request.status === 'success' ? 'bg-green-500' : 'bg-red-500'
-                    ]"
-                  />
-                  <div class="flex items-center space-x-2 min-w-0">
-                    <span
-                      :class="[
-                        'inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold',
-                        getMethodClass(request.method)
-                      ]"
-                    >
-                      {{ request.method.toUpperCase() }}
-                    </span>
-                    <div class="min-w-0">
-                      <p class="text-sm font-medium text-gray-900 dark:text-white break-all" :title="formatPath(request.path)">
-                        {{ formatPath(request.path) }}
-                      </p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                        {{ formatTime(request.timestamp) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                  <span class="text-sm text-gray-600 dark:text-gray-400">
-                    {{ (request.response_time * 1000).toFixed(0) }}ms
-                  </span>
-                  <span
-                    :class="[
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                      request.status === 'success'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                    ]"
-                  >
-                    {{ request.status }}
-                  </span>
-                </div>
-              </div>
-              <!-- 错误信息 -->
-              <div v-if="request.status !== 'success' && request.error" class="mt-2 pl-5">
-                <p class="text-xs text-red-600 dark:text-red-400 font-mono">
-                  {{ request.error }}
-                </p>
-                <!-- 错误响应内容（新增） -->
-                <div v-if="request.response_content" class="mt-3">
-                  <pre class="text-xs text-gray-600 dark:text-gray-400 overflow-x-auto whitespace-pre-wrap font-mono">{{ request.response_content }}</pre>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-
-      <!-- 错误请求 -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">错误请求</h3>
-        </div>
-        <div class="overflow-hidden">
-          <div class="max-h-96 overflow-y-auto p-6">
-            <div class="space-y-3">
-              <div v-if="!errorRequests.length" class="text-center py-8 text-gray-500 dark:text-gray-400">
-                暂无错误请求
-              </div>
-              <div
-                v-for="request in errorRequests"
-                :key="request.request_id"
-                class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20"
+                :class="['p-3 rounded-lg', getStatusContainerClass(request.status_code, request.status)]"
               >
                 <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3 min-w-0">
-                  <div class="w-2 h-2 rounded-full bg-red-500" />
+                  <div class="flex items-center space-x-3 min-w-0">
+                    <div
+                      :class="[
+                        'w-2 h-2 rounded-full',
+                        getStatusDotClass(request.status_code, request.status)
+                      ]"
+                    />
                     <div class="flex items-center space-x-2 min-w-0">
                       <span
                         :class="[
@@ -248,8 +173,85 @@
                     <span class="text-sm text-gray-600 dark:text-gray-400">
                       {{ (request.response_time * 1000).toFixed(0) }}ms
                     </span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                      {{ request.status }}
+                    <span
+                      :class="[
+                        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                        getStatusBadgeClass(request.status_code, request.status)
+                      ]"
+                    >
+                      {{ formatStatusLabel(request.status_code, request.status) }}
+                    </span>
+                  </div>
+                </div>
+                <div v-if="isErrorStatus(request.status_code, request.status) && request.error" class="mt-2 pl-5">
+                  <p class="text-xs text-red-600 dark:text-red-400 font-mono">
+                    {{ request.error }}
+                  </p>
+                  <!-- 错误响应内容（新增） -->
+                  <div v-if="request.response_content" class="mt-3">
+                    <pre class="text-xs text-gray-600 dark:text-gray-400 overflow-x-auto whitespace-pre-wrap font-mono">{{ request.response_content }}</pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 错误请求 -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">错误请求</h3>
+        </div>
+        <div class="overflow-hidden">
+          <div class="max-h-96 overflow-y-auto p-6">
+            <div class="space-y-3">
+              <div v-if="!errorRequests.length" class="text-center py-8 text-gray-500 dark:text-gray-400">
+                暂无错误请求
+              </div>
+              <div
+                v-for="request in errorRequests"
+                :key="request.request_id"
+                :class="['p-3 rounded-lg', getStatusContainerClass(request.status_code, request.status)]"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-3 min-w-0">
+                    <div
+                      :class="[
+                        'w-2 h-2 rounded-full',
+                        getStatusDotClass(request.status_code, request.status)
+                      ]"
+                    />
+                    <div class="flex items-center space-x-2 min-w-0">
+                      <span
+                        :class="[
+                          'inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold',
+                          getMethodClass(request.method)
+                        ]"
+                      >
+                        {{ request.method.toUpperCase() }}
+                      </span>
+                      <div class="min-w-0">
+                        <p class="text-sm font-medium text-gray-900 dark:text-white break-all" :title="formatPath(request.path)">
+                          {{ formatPath(request.path) }}
+                        </p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                          {{ formatTime(request.timestamp) }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                      {{ (request.response_time * 1000).toFixed(0) }}ms
+                    </span>
+                    <span
+                      :class="[
+                        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                        getStatusBadgeClass(request.status_code, request.status)
+                      ]"
+                    >
+                      {{ formatStatusLabel(request.status_code, request.status) }}
                     </span>
                   </div>
                 </div>
@@ -288,7 +290,13 @@ import {
   type ChartOptions
 } from 'chart.js'
 import { statsApi } from '@/services/api'
-import type { SystemStats } from '@/types'
+import {
+  formatStatusLabel,
+  getStatusBadgeClass,
+  getStatusContainerClass,
+  getStatusDotClass,
+  isErrorStatus
+} from '@/utils/statusStyle'
 
 // 注册 Chart.js 组件
 ChartJS.register(
@@ -371,7 +379,7 @@ const errorRequests = computed(() => {
   if (!stats.value?.recent_requests) return []
   // 过滤出状态为 'error' 的请求，并按时间戳倒序排列
   return [...stats.value.recent_requests]
-    .filter(request => request.status === 'error')
+    .filter(request => isErrorStatus(request.status_code, request.status))
     .sort((a, b) => b.timestamp - a.timestamp)
 })
 
