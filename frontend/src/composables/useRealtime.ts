@@ -39,13 +39,15 @@ export function useRealtimeStats(options: {
     if (loading.value) return
 
     loading.value = true
-    error.value = null
+    // 注意：不在开头清空 error，只在加载成功时清空，避免错误提示闪烁
 
     try {
       const rangeToUse = typeof timeRange === 'string' ? timeRange : currentTimeRange.value
       await statsStore.loadStats(rangeToUse)
       currentTimeRange.value = rangeToUse
       lastUpdated.value = Date.now()
+      // 只在加载成功时清空错误状态
+      error.value = null
     } catch (err) {
       error.value = err instanceof Error ? err.message : '加载统计数据失败'
       console.error('[RealtimeStats] 加载失败:', err)
