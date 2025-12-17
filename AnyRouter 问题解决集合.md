@@ -54,3 +54,30 @@
 UA问题
 
 > 来源：QQ 群
+
+### Claude Code might not be available in your country
+
+完整错误如下：
+
+```
+Failed to connect to api.anthropic.com: ERR_BAD_REQUEST
+
+Please check your internet connection and network settings.
+
+Note: Claude Code might not be available in your country. Check supported countries at
+```
+
+解决方法：
+`~/.claude.json` 里加入 `"hasCompletedOnboarding": true`，如下：
+
+```javascript
+{
+    // ...
+    "hasCompletedOnboarding": true
+    // ...
+}
+```
+
+> 来源：
+> 1. https://linux.do/t/topic/1318669
+> 2. https://blog.csdn.net/c364902709/article/details/151394810
