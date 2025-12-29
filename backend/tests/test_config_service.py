@@ -1,4 +1,5 @@
 import asyncio
+import errno
 import tempfile
 import time
 from pathlib import Path
@@ -108,6 +109,20 @@ class TestConfigService:
         assert result is True
         backups = list(service.backup_dir.glob(".env_*"))
         assert len(backups) == 1
+
+    def test_update_env_backup_failure_is_non_fatal(self, service):
+        service.env_file.write_text("KEY=old\n")
+        with patch.object(service, "create_backup", side_effect=ConfigServiceError("backup error")):
+            result = asyncio.run(service.update_env({"KEY": "new"}, create_backup=True))
+        assert result is True
+        assert "KEY=new" in service.env_file.read_text()
+
+    def test_update_env_fallback_on_replace_ebusy(self, service):
+        service.env_file.write_text("KEY=old\n")
+        with patch("pathlib.Path.replace", side_effect=OSError(errno.EBUSY, "Device or resource busy")):
+            result = asyncio.run(service.update_env({"KEY": "new"}, create_backup=False))
+        assert result is True
+        assert "KEY=new" in service.env_file.read_text()
 
     def test_update_env_failure(self, service):
         with patch('tempfile.mkstemp', side_effect=Exception("Temp error")):

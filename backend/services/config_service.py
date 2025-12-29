@@ -5,6 +5,7 @@
 """
 
 import asyncio
+import errno
 import os
 import shutil
 import tempfile
@@ -62,7 +63,11 @@ class ConfigService:
             lock_flags = LOCK_EX | (LOCK_NB if non_blocking else 0)
             flock(file_obj.fileno(), lock_flags)
             return True
-        except (IOError, OSError):
+        except (IOError, OSError) as e:
+            # Docker Desktop / 某些挂载文件系统可能不支持 flock，降级为无锁模式
+            if getattr(e, "errno", None) in (errno.ENOSYS, errno.EOPNOTSUPP, errno.ENOTSUP):
+                print("[ConfigService] File lock not supported, continuing without lock")
+                return True
             return False
 
     def _release_file_lock(self, file_obj):
@@ -185,9 +190,22 @@ class ConfigService:
 
         async with self._lock:
             try:
+                if self.env_file.exists() and self.env_file.is_dir():
+                    raise ConfigServiceError(
+                        f"Env path '{self.env_file}' is a directory, expected a file. "
+                        "Check your bind-mount (e.g. './.env:/app/.env')."
+                    )
+
+                # Ensure parent directory exists (for custom env_file paths)
+                self.env_file.parent.mkdir(parents=True, exist_ok=True)
+
                 # 创建备份
                 if create_backup and self.env_file.exists():
-                    self.create_backup()
+                    try:
+                        self.create_backup()
+                    except ConfigServiceError as e:
+                        # 备份失败不应阻断配置写入（Docker bind-mount 权限/只读目录等场景）
+                        print(f"[ConfigService] Backup skipped: {e}")
 
                 # 使用临时文件进行原子写入
                 temp_fd, temp_path = tempfile.mkstemp(
@@ -293,7 +311,38 @@ class ConfigService:
 
                             # 原子性替换文件
                             temp_file_path = Path(temp_path)
-                            temp_file_path.replace(self.env_file)
+                            try:
+                                temp_file_path.replace(self.env_file)
+                            except OSError as e:
+                                # 例如将单文件 bind-mount 到容器时，rename/replace 可能出现 EXDEV/EBUSY/EPERM/EACCES
+                                if e.errno not in (errno.EXDEV, errno.EBUSY, errno.EPERM, errno.EACCES):
+                                    raise
+
+                                print(
+                                    "[ConfigService] Atomic replace failed, falling back to direct write "
+                                    f"(errno={getattr(e, 'errno', None)}): {e}"
+                                )
+
+                                # 回退方案：直接覆盖写入目标文件（非原子，但能兼容跨挂载场景）
+                                self.env_file.parent.mkdir(parents=True, exist_ok=True)
+
+                                with open(temp_file_path, 'r', encoding='utf-8') as src_file:
+                                    new_content = src_file.read()
+
+                                with open(self.env_file, 'w', encoding='utf-8') as dst_file:
+                                    if not self._acquire_file_lock(dst_file):
+                                        raise ConfigServiceError("Failed to acquire file lock")
+                                    try:
+                                        dst_file.write(new_content)
+                                        dst_file.flush()
+                                        os.fsync(dst_file.fileno())
+                                    finally:
+                                        self._release_file_lock(dst_file)
+
+                                try:
+                                    os.unlink(temp_path)
+                                except OSError:
+                                    pass
 
                             print(f"[ConfigService] Successfully updated {len(config)} variables in '{self.env_file}'")
                             return True

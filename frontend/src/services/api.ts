@@ -51,7 +51,11 @@ const createApiClient = (): KyInstance => {
         async (_request, _options, response) => {
           if (!response.ok) {
             const body = await response.clone().json().catch(() => ({}))
-            const message = body.message || `HTTP Error: ${response.statusText}`
+            const detail = body?.detail
+            const detailMessage = detail
+              ? (typeof detail === 'string' ? detail : JSON.stringify(detail))
+              : null
+            const message = body.message || detailMessage || `HTTP Error: ${response.statusText}`
 
             if (response.status === 401) {
               localStorage.removeItem(AUTH_TOKEN_KEY)
