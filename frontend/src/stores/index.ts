@@ -185,10 +185,26 @@ export const useConfigStore = defineStore('config', () => {
 
   // 将 ConfigEntry[] 转换为 SystemConfig
   const entriesToConfig = (entries: ConfigEntry[]): SystemConfig => {
-    const result: any = {}
-    for (const entry of entries) {
-      result[entry.key] = entry.value
+    const result: Partial<SystemConfig> = {
+      target_base_url: '',
+      preserve_host: false,
+      system_prompt_replacement: null,
+      system_prompt_block_insert_if_not_exist: false,
+      debug_mode: false,
+      port: 8088,
+      custom_headers: {},
+      dashboard_enabled: false
     }
+    const mapped = result as Record<string, any>
+
+    for (const entry of entries) {
+      if (entry.key === 'enable_dashboard' || entry.key === 'dashboard_enabled') {
+        result.dashboard_enabled = Boolean(entry.value)
+        continue
+      }
+      mapped[entry.key] = entry.value
+    }
+
     return result as SystemConfig
   }
 
