@@ -79,7 +79,8 @@ def _collect_runtime_config() -> Dict[str, Any]:
 def _build_config_response(redact_sensitive: bool = False) -> ConfigResponse:
     """构建兼容旧版扁平字段与新版 entries 的响应"""
     runtime_config = _collect_runtime_config()
-    api_key_configured = bool(runtime_config.get("dashboard_api_key"))
+    api_key = runtime_config.get("dashboard_api_key", "")
+    api_key_configured = bool(api_key and api_key.strip())
 
     if redact_sensitive:
         runtime_config = dict(runtime_config)

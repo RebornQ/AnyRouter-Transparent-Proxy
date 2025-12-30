@@ -138,6 +138,7 @@ export const useConfigStore = defineStore('config', () => {
   const loadingMetadata = ref(false)
   const error = ref<string | null>(null)
   const lastUpdated = ref<number>(0)
+  const apiKeyConfigured = ref(false)
 
   // 编辑工作流状态
   const isEditing = ref(false)
@@ -229,6 +230,9 @@ export const useConfigStore = defineStore('config', () => {
         map[entry.key] = entry.metadata
       }
       metadataMap.value = map
+
+      // 保存 API Key 配置状态
+      apiKeyConfigured.value = response.api_key_configured ?? false
 
       // 兼容旧接口
       config.value = entriesToConfig(entries)
@@ -458,6 +462,7 @@ export const useConfigStore = defineStore('config', () => {
     loadingMetadata,
     error,
     lastUpdated,
+    apiKeyConfigured,
 
     // 编辑工作流状态
     isEditing,

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   anthropic-proxy:
     build:
-      context: .  # 构建上下文为项目根目录（包含 backend/ 和 frontend/）
+      context: . # 构建上下文为项目根目录（包含 backend/ 和 frontend/）
       dockerfile: Dockerfile
       # 可选：传递构建参数
       args:
@@ -18,7 +18,7 @@ services:
       - PORT=${PORT:-8088}
       # 管理面板配置
       - ENABLE_DASHBOARD=${ENABLE_DASHBOARD:-true}
-      - DASHBOARD_API_KEY=${DASHBOARD_API_KEY:-your-secret-api-key-change-me}
+      - DASHBOARD_API_KEY=${DASHBOARD_API_KEY:-}
       # 调试模式
       - DEBUG_MODE=${DEBUG_MODE:-false}
       # 日志持久化

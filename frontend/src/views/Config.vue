@@ -623,6 +623,12 @@ const syncEditorEntries = () => {
 
 // 处理编辑按钮
 const handleEdit = () => {
+  // 检查是否配置了 API Key
+  if (!configStore.apiKeyConfigured) {
+    error.value = '管理员未开启密钥认证'
+    return
+  }
+
   if (!authStore.isConfigEditingAuthenticated) {
     showAuthModal.value = true
     return
