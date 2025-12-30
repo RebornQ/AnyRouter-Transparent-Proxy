@@ -44,6 +44,7 @@ AnyRouter-Transparent-Proxy/
 │   ├── package.json    # 前端依赖
 │   └── vite.config.ts  # Vite 配置
 ├── env/                 # 配置文件目录
+│   ├── .env             # 环境变量配置（需从 .env.example 复制）
 │   └── .env.headers.json # 自定义请求头配置
 ├── docs/                # 文档
 ├── static/              # 前端构建产物（.gitignore）
@@ -71,9 +72,9 @@ git clone <repository-url>
 cd AnyRouter-Transparent-Proxy
 
 # 复制环境变量模板（可选）
-cp .env.example .env
+cp .env.example env/.env
 
-# 编辑 .env 文件修改配置（可选）
+# 编辑 env/.env 文件修改配置（可选）
 # 默认使用 https://anyrouter.top
 
 # 启动服务
@@ -122,7 +123,7 @@ pip install -r backend/requirements.txt
 pip install fastapi uvicorn httpx python-dotenv
 
 # 复制环境变量模板
-cp .env.example .env
+cp .env.example env/.env
 
 # 启动服务（从项目根目录运行）
 python -m backend.app
@@ -149,7 +150,7 @@ cd ..
 
 ### 环境变量
 
-创建 `.env` 文件或设置环境变量：
+创建 `env/.env` 文件或设置环境变量：
 
 ```bash
 # API 目标地址（默认：https://anyrouter.top）或使用反代地址

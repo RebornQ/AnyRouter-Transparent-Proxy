@@ -30,19 +30,15 @@ services:
       - HTTP_PROXY=${HTTP_PROXY:-}
       - HTTPS_PROXY=${HTTPS_PROXY:-}
     env_file:
-      - .env # 如果存在 .env 文件，会自动加载
+      - env/.env # 如果存在 .env 文件,会自动加载
     volumes:
-      # 持久化 .env（用于管理面板“保存配置”写回宿主机）
-      - ./.env:/app/.env
-      # 挂载自定义 Header 配置文件（可选）
+      # 挂载配置文件（可选）
       - ./env/:/app/env/
-      # 持久化 .env 备份
-      - ./backups:/app/backups
       # 持久化日志与数据
       - ./data:/app/data
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "python", "-c", "from dotenv import load_dotenv; import httpx, os; load_dotenv(dotenv_path='/app/.env', override=True); port = os.getenv('PORT', '8088'); r = httpx.get(f'http://localhost:{port}/health', timeout=2); exit(0 if r.status_code == 200 else 1)" ]
+      test: [ "CMD", "python", "-c", "from dotenv import load_dotenv; import httpx, os; load_dotenv(dotenv_path='/app/env/.env', override=True); port = os.getenv('PORT', '8088'); r = httpx.get(f'http://localhost:{port}/health', timeout=2); exit(0 if r.status_code == 200 else 1)" ]
       interval: 30s
       timeout: 3s
       retries: 3

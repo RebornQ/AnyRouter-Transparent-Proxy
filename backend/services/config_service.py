@@ -425,7 +425,7 @@ class ConfigService:
 
 
 # 全局配置服务实例
-config_service = ConfigService()
+config_service = ConfigService("env/.env", "env/backups")
 
 
 def load_env_config() -> Dict[str, str]:

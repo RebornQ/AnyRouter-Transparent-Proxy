@@ -75,3 +75,9 @@
 ```shell
 /zcf:init-project AnyRouter 透明代理 - AI 上下文索引 要求尽量精简，只写必要事项
 ```
+
+## /review
+
+```shell
+/review 请帮我 review 一下 git 4c9b8531c193aac1781ddab67df73de4ea074621 的代码
+```

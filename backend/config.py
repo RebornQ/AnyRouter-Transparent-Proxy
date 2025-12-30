@@ -10,7 +10,7 @@ import os
 
 # 加载环境变量
 # 以 .env 为准（Docker Compose 场景下容器环境变量可能是启动时注入的旧值）
-load_dotenv(override=True)
+load_dotenv(dotenv_path="env/.env", override=True)
 
 # ===== 基础配置 =====
 # 主站：https://anyrouter.top

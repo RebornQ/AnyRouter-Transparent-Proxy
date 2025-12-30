@@ -45,6 +45,7 @@ AnyRouter-Transparent-Proxy/
 │   ├── package.json    # Frontend dependencies
 │   └── vite.config.ts  # Vite configuration
 ├── env/                 # Configuration files directory
+│   ├── .env             # Environment variables config (copy from .env.example)
 │   └── .env.headers.json # Custom request headers configuration
 ├── docs/                # Documentation
 ├── static/              # Frontend build artifacts (.gitignore)
@@ -72,9 +73,9 @@ git clone <repository-url>
 cd AnyRouter-Transparent-Proxy
 
 # Copy environment variable template (optional)
-cp .env.example .env
+cp .env.example env/.env
 
-# Edit .env file to modify configuration (optional)
+# Edit env/.env file to modify configuration (optional)
 # Default uses https://anyrouter.top
 
 # Start the service
@@ -123,7 +124,7 @@ pip install -r backend/requirements.txt
 pip install fastapi uvicorn httpx python-dotenv
 
 # Copy environment variable template
-cp .env.example .env
+cp env/.env.example env/.env
 
 # Start the service (run from project root directory)
 python -m backend.app
@@ -150,7 +151,7 @@ The management dashboard can now be accessed directly from the homepage [http://
 
 ### Environment Variables
 
-Create a `.env` file or set environment variables:
+Create a `env/.env` file or set environment variables:
 
 ```bash
 # API target address (default: https://anyrouter.top) or use reverse proxy address
